@@ -1,0 +1,121 @@
+.container
+{
+    width: 26.5rem;
+    height: 100%;
+
+    padding: 3rem 4rem;
+
+    background-color: var(--color_purple_500);
+
+    color: var(--color_white);
+
+    display: flex;
+    flex-direction: column;
+    align-items:  center;
+    justify-content: space-between;
+
+    // ***
+
+    strong {
+        font-family: Lexend, sans-serif;
+        font-weight: 600;
+    }
+
+    // ***
+
+    header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    // ***
+
+    footer {
+        align-self: stretch;
+
+        &.empty {
+            opacity: 0.5;
+        }
+    }
+}
+
+.emptyPlayer
+{
+    width: 100%;
+    height: 20rem;
+
+    padding: 4rem;
+
+    border: 1.5px dashed var(--color_purple_300);
+    border-radius: 1.5rem;
+
+    background-image: linear-gradient(143.8deg, #9164facc 0%, transparent 100%);
+
+    text-align: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progressBar
+{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    font-size: 0.875rem;
+
+    // ***
+
+    span {
+        display: inline-block;
+    }
+}
+
+.slider
+{
+    flex: 1;
+
+    // ***
+
+    .emptySlider {
+        width: 100%;
+        height: 4px;
+
+        background-color: var(--color_purple_300);
+    }
+}
+
+.buttons
+{
+    margin-top: 2.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+
+    // ***
+
+    button {
+        border: none;
+
+        background-color: transparent;
+
+        font-size: 0;
+
+        // ***
+
+        &.playButton {
+            width: 4rem;
+            height: 4rem;
+
+            border-radius: 1rem;
+
+            background-color: var(--color_purple_400);
+        }
+    }
+
+}
