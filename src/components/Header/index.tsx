@@ -1,15 +1,20 @@
 import styles from './styles.module.scss';
 
-import format from 'date-fns/format';
-import ptBr from 'date-fns/locale/pt-BR';
+import Link from 'next/link';
+
+import ConvertToPtBrDate from '../../utils/functions/ConvertToPtBrDate';
 
 export default function Header() {
-   const currentDate = format( new Date(), 'yyyy-MM-dd' );
-   const currentDateText = format( new Date(), 'EEEEEE, d MMMM', { locale: ptBr } );
+   const currentDate = ConvertToPtBrDate( new Date(), 'yyyy-MM-dd' );
+   const currentDateText = ConvertToPtBrDate( new Date(), 'EEEEEE, d MMMM' );
+
+   // ***
 
    return (
       <header className={ styles.container }>
-         <img src="/icons/logo.svg" alt="Podcastr Logo"/>
+         <Link href="/">
+            <a><img src="/icons/logo.svg" alt="Podcastr Logo"/></a>
+         </Link>
 
          <p>O melhor para você ouvir, sempre</p>
          <span>

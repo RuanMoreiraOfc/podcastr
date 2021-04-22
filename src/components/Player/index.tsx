@@ -21,6 +21,8 @@ export default function Player() {
       );
    }
 
+   // ***
+
    return (
       <div className={ styles.container }>
          <header>

@@ -1,0 +1,132 @@
+.wrapper
+{
+    max-width: 45rem;
+    height: calc(100% - 6.5rem);
+    overflow-y: scroll;
+
+    padding: 3rem 2rem;
+    margin: 0 auto;
+
+    // ***
+
+    .container
+    {
+        position: relative;
+
+        // ***
+
+        img {
+            border-radius: 1rem;
+        }
+
+        // ***
+
+        button {
+            width: 3rem;
+            height: 3rem;
+
+            border: none;
+            border-radius: 0.75rem;
+
+            font-size: 0;
+
+            z-index: 5;
+
+            position: absolute;
+
+            transition: filter 0.2s;
+
+            // ***
+
+            &:hover {
+                filter: brightness(0.95);
+            }
+
+            // ***
+
+            &.left {
+                background-color: var(--color_purple_500);
+
+                left: 0;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            // ***
+
+            &.right {
+                background-color: var(--color_green_500);
+
+                right: 0;
+                top: 50%;
+                transform: translate(50%, -50%);
+            }
+        }
+    }
+
+    // ***
+
+    header {
+        padding-bottom: 1rem;
+
+        border-bottom: 1px solid var(--color_gray_100);
+
+        // ***
+
+        h1 {
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        // ***
+
+        span {
+            font-size: 0.875rem;
+
+            display: inline-block;
+
+            // ***
+
+            & + span {
+                padding-left: 1rem;
+                margin-left: 1rem;
+
+                position: relative;
+
+                // ***
+
+                &::after {
+                    content: "";
+
+                    width: 4px;
+                    height: 4px;
+
+                    border-radius: 50%;
+
+                    background-color: #DDD;
+
+                    position: absolute;
+                    left: 0;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                }
+            }
+        }
+    }
+
+    // ***
+
+    .description {
+        margin-top: 2rem;
+
+        line-height: 1.675rem;
+
+        color: var(--color_gray_800);
+
+        // ***
+
+        p {
+            margin: 1.5rem 0;
+        }
+    }
+}
