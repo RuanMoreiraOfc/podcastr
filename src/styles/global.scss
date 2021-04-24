@@ -4,21 +4,24 @@
 @media (max-width: 1440px)
 {
     html {
-        font-size: 93.75%;
+        // font-size: 93.75%;
+        font-size: 87.5%;
     }
 }
 
 @media (max-width: 1080px)
 {
     html {
-        font-size: 87.5%;
+        // font-size: 87.5%;
+        font-size: 81.25%;
     }
 }
 
 @media (max-width: 720px)
 {
     html {
-        font-size: 81.25%;
+        // font-size: 81.25%;
+        font-size: 75%;
     }
 }
 
@@ -63,7 +66,7 @@ h2
     font-size: 1.5rem;
 }
 
-button
+a, button
 {
     cursor: pointer;
 }

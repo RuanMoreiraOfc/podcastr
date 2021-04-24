@@ -1,18 +1,19 @@
+// @collapse
+
 import styles from '../styles/pages/home.module.scss';
 
-import React, { Fragment } from 'react';
+import React, { Fragment, useContext } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 
-import { parseISO } from 'date-fns';
-
 import api, { IApiParams } from '../services/api';
 
 import { IEpisode, IEpisodeApi } from '../utils/interfaces/Episode';
+import CreateEpisodeFromApi from '../utils/functions/CreateEpisodeFromApi';
 import CreateTrueArray from '../utils/functions/CreateTrueArray';
-import ConvertToPtBrDate from '../utils/functions/ConvertToPtBrDate';
-import ConvertDurationToTimeString from '../utils/functions/ConvertDurationToTimeString';
+
+import PlayerContext from '../contexts/PlayerContext';
 
 import EpisodeThumb from '../components/EpisodeThumb';
 import ButtonWithImage from '../components/ButtonWithImage';
@@ -64,27 +65,15 @@ export default function Home({ latestEpisodes, previousEpisodes }: IHomeProps) {
 }
 
 export const getStaticProps: GetStaticProps = async ( ctx ) => {
-   const { data } = await api.get( '/episodes', {
+   const { data } : { data: IEpisodeApi[] } = await api.get( '/episodes', {
       params: {
          _limit: 12
          , _sort: "published_at"
          , _order: "desc"
       } as IApiParams
-   } )
+   } );
 
-   const episodes: IHomeEpisode[] = data.map( ( episode: IEpisodeApi ) => {
-      const { published_at: date, ...rest } = episode;
-      const duration = rest.file.duration;
-
-      const base = Object.assign(rest) as IHomeEpisode;
-
-      base.publishedAt = ConvertToPtBrDate( parseISO( date ), 'd MMM yy' )
-      base.publishedAtAsTime = date;
-      base.file.duration = duration
-      base.file.durationAsString = ConvertDurationToTimeString( duration )
-
-      return base;
-   } )
+   const episodes = data.map( CreateEpisodeFromApi );
 
    const latestEpisodes = episodes.slice(0, 2);
    const previousEpisodes = episodes.slice(2);
@@ -92,10 +81,12 @@ export const getStaticProps: GetStaticProps = async ( ctx ) => {
    return ({
       props: { latestEpisodes, previousEpisodes }
       , revalidate: 60 * 60 * 8 // 8 hrs
-   })
+   });
 }
 
-// #region *** Components
+// *** Sub Components
+
+   // #region *** Episode Body
 
 function EpisodeLabel( episode: IHomeEpisode ) {
    const {
@@ -119,7 +110,7 @@ function EpisodeLabel( episode: IHomeEpisode ) {
             <EpisodeDetail { ...props } />
          </div>
 
-         <EpisodeButtonPlay />
+         <EpisodeButtonPlay { ...episode } />
       </li>
    );
 }
@@ -137,6 +128,10 @@ function EpisodeCell( episode: IHomeEpisode ) {
 
    const props = Object.assign( episode, { tags, tagProps } ) as IEpisodeDetailProps;
 
+   function withClassName( className: string ) {
+      return ({className} );
+   }
+
    // ***
 
    return (
@@ -145,14 +140,14 @@ function EpisodeCell( episode: IHomeEpisode ) {
 
          <EpisodeDetail { ...props } />
 
-         <td><EpisodeButtonPlay /></td>
+         <td><EpisodeButtonPlay { ...episode } /></td>
       </tr>
    );
 }
 
-// #endregion *** Components
+   // #endregion *** Episode Body
 
-// #region *** Sub Components
+   // #region *** Episode Miscellaneous
 
 function EpisodeDetail( { tags, tagProps, ...rest}: IEpisodeDetailProps ) {
    const {
@@ -191,16 +186,31 @@ function EpisodeDetail( { tags, tagProps, ...rest}: IEpisodeDetailProps ) {
    );
 }
 
-function EpisodeButtonPlay() {
-   return ( <ButtonWithImage icon="play-green" alt="Tocar Episódio"/> );
+function EpisodeButtonPlay( episode: IHomeEpisode ) {
+   const { PlayAnEpisode } = useContext( PlayerContext )
+
+   const {
+      title
+      , thumbnail
+      , members
+      , file: source
+   } = episode;
+
+   return (
+      <ButtonWithImage
+         icon="play-green"
+         alt="Tocar Episódio"
+         onClick={
+            () => PlayAnEpisode({
+               title
+               , thumbnail
+               , members
+               , duration: source.duration
+               , url: source.url
+            })
+         }
+      />
+   );
 }
 
-// #endregion *** Sub Components
-
-// #region *** Utils Functions
-
-function withClassName( className: string ) {
-   return ({className} );
-}
-
-// #endregion *** Utils Functions
+   // #endregion *** Episode Miscellaneous

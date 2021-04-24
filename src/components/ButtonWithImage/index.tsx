@@ -1,16 +1,17 @@
-import React from "react";
+import { MouseEventHandler } from "react";
 
-interface IButtonWithImage extends Partial<HTMLButtonElement & HTMLImageElement> {
+interface IButtonWithImage {
+   alt: string;
    icon: string;
+   disabled?: boolean;
+   className?: string;
+   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function ButtonWithImage( {icon, ...rest}: IButtonWithImage ) {
-   const buttonProps = rest as Partial<HTMLButtonElement>;
-   const imgProps = rest as Partial<HTMLImageElement>;
-
+export default function ButtonWithImage( {icon, alt, ...rest}: IButtonWithImage ) {
    return (
-      <button type="button" { ...{buttonProps} }>
-         <img src={ `/icons/${icon}.svg` || rest.src } { ...{imgProps} }/>
+      <button type="button" { ...rest }>
+         <img src={ `/icons/${icon}.svg` } alt={alt}/>
       </button>
    );
 }

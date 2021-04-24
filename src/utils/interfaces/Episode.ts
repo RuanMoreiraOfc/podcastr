@@ -15,7 +15,7 @@ export interface IEpisodeApi {
     file: IFileApi;
 }
 
-export interface IFile extends IFileApi {
+export interface IFile extends Omit<IFileApi, 'type'> {
     durationAsString: string;
 }
 

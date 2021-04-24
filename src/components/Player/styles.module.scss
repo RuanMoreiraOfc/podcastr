@@ -1,9 +1,10 @@
 .container
 {
     width: 26.5rem;
-    height: 100%;
+    min-height: 100%;
+    height: fit-content;
 
-    padding: 3rem 4rem;
+    padding: 2rem 4rem;
 
     background-color: var(--color_purple_500);
 
@@ -23,6 +24,8 @@
     // ***
 
     header {
+        margin-bottom: 1rem;
+
         display: flex;
         align-items: center;
         gap: 1rem;
@@ -36,6 +39,42 @@
         &.empty {
             opacity: 0.5;
         }
+    }
+}
+
+.occupiedPlayer
+{
+    text-align: center;
+
+    // ***
+
+    img {
+        border-radius: 1.5rem;
+    }
+
+    // ***
+
+    strong {
+        margin-top: 1rem;
+
+        font: var(--font_title);
+        font-size: 1.25rem;
+        line-height: 1.75rem;
+
+        display: block;
+    }
+
+    // ***
+
+    span {
+        // margin-top: 1rem;
+        margin-bottom: 1.5rem;
+
+        line-height: 1.5rem;
+
+        opacity: 0.6;
+
+        display: block;
     }
 }
 
@@ -89,7 +128,7 @@
 
 .buttons
 {
-    margin-top: 2.5rem;
+    margin-top: 1.25rem;
 
     display: flex;
     align-items: center;
@@ -105,6 +144,20 @@
 
         font-size: 0;
 
+        transition: filter 0.2s;
+
+        // ***
+
+        &:disabled {
+            cursor: default;
+        }
+
+        // ***
+
+        &:hover:not(:disabled) {
+            filter: brightness(0.7);
+        }
+
         // ***
 
         &.playButton {
@@ -114,6 +167,12 @@
             border-radius: 1rem;
 
             background-color: var(--color_purple_400);
+
+            // ***
+
+            &:hover:not(:disabled) {
+                filter: brightness(0.95);
+            }
         }
     }
 
