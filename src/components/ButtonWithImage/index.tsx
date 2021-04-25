@@ -1,6 +1,6 @@
 import { MouseEventHandler } from "react";
 
-interface IButtonWithImage {
+interface IButtonWithImageProps {
    alt: string;
    icon: string;
    disabled?: boolean;
@@ -8,7 +8,7 @@ interface IButtonWithImage {
    onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function ButtonWithImage( {icon, alt, ...rest}: IButtonWithImage ) {
+export default function ButtonWithImage( {icon, alt, ...rest}: IButtonWithImageProps ) {
    return (
       <button type="button" { ...rest }>
          <img src={ `/icons/${icon}.svg` } alt={alt}/>

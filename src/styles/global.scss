@@ -1,6 +1,13 @@
 @import "./global.color.scss";
 @import "./global.font.scss";
 
+@media screen and (display-mode: fullscreen) and (max-width: 1440px)
+{
+    html {
+        font-size: 93.75%;
+    }
+}
+
 @media (max-width: 1440px)
 {
     html {

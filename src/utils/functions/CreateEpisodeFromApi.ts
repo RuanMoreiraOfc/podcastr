@@ -8,13 +8,13 @@ export default function CreateEpisodeFromApi( episode: IEpisodeApi ) {
     const { published_at: date, ...rest } = episode;
     const { url, duration } = episode.file;
 
-    const base = { file: {} } as IEpisode;
+    const base = {} as IEpisode;
 
     base.publishedAt = ConvertToPtBrDate( parseISO( date ), 'd MMM yy' );
     base.publishedAtAsTime = date;
-    base.file.url = url;
-    base.file.duration = duration;
-    base.file.durationAsString = ConvertDurationToTimeString( duration );
+    base.url = url;
+    base.duration = duration;
+    base.durationAsString = ConvertDurationToTimeString( duration );
 
     const ep = Object.assign(rest, base) as IEpisode;
 

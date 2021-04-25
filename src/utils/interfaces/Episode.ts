@@ -19,9 +19,7 @@ export interface IFile extends Omit<IFileApi, 'type'> {
     durationAsString: string;
 }
 
-export interface IEpisode extends Omit<IEpisodeApi, 'file' | 'published_at'> {
+export interface IEpisode extends Omit<IEpisodeApi, 'file' | 'published_at'>, IFile {
     publishedAt: string;
     publishedAtAsTime: string;
-
-    file: IFile;
 }

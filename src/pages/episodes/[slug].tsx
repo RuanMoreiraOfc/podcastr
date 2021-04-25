@@ -1,6 +1,5 @@
 import styles from '../../styles/pages/episodes.module.scss';
 
-import { useContext } from 'react';
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -10,7 +9,7 @@ import api, { IApiParams } from '../../services/api';
 import { IEpisode, IEpisodeApi } from '../../utils/interfaces/Episode';
 import CreateEpisodeFromApi from '../../utils/functions/CreateEpisodeFromApi';
 
-import PlayerContext from '../../contexts/PlayerContext';
+import usePlayer from '../../contexts/PlayerContext';
 
 import EpisodeThumb from '../../components/EpisodeThumb';
 import ButtonWithImage from '../../components/ButtonWithImage';
@@ -22,7 +21,7 @@ interface IEpisodeProps {
 export default function Episode( { episode }: IEpisodeProps ) {
    const {
       PlayAnEpisode
-   } = useContext(PlayerContext);
+   } = usePlayer();
 
    const {
       thumbnail
@@ -31,13 +30,23 @@ export default function Episode( { episode }: IEpisodeProps ) {
       , members
       , publishedAt: date
       , publishedAtAsTime: dateTime
-      , file: source
+      , duration
+      , durationAsString
+      , url
    } = episode;
+
+   const play = () => PlayAnEpisode( {
+      title
+      , thumbnail
+      , members
+      , duration
+      , url
+   } )
 
    return (
       <div className={ styles.wrapper }>
          <Head>
-            <title>{ title } | podcastr</title>
+            <title>{ title } | Podcastr</title>
          </Head>
 
          <div className={ styles.container }>
@@ -49,15 +58,7 @@ export default function Episode( { episode }: IEpisodeProps ) {
                icon={ 'play' }
                alt={ 'Tocar Episódio' }
                className={ styles.right }
-               onClick={
-                  () => PlayAnEpisode({
-                     title
-                     , thumbnail
-                     , members
-                     , duration: source.duration
-                     , url: source.url
-                  })
-               }
+               onClick={ play }
             />
          </div>
 
@@ -65,7 +66,7 @@ export default function Episode( { episode }: IEpisodeProps ) {
             <h1>{ title }</h1>
             <span>{ members }</span>
             <span><time { ...{dateTime} }>{ date }</time></span>
-            <span>{ source.durationAsString }</span>
+            <span>{ durationAsString }</span>
          </header>
 
          <div className={ styles.description } dangerouslySetInnerHTML={ { __html: description } } />

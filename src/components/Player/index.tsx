@@ -2,22 +2,25 @@
 
 import styles from './styles.module.scss';
 
-import { useRef, useEffect, useContext, ComponentProps } from 'react';
+import { useRef, useState, useEffect, ComponentProps, MutableRefObject } from 'react';
 
 import { IEpisode } from '../../utils/interfaces/Episode';
 import ConvertDurationToTimeString from '../../utils/functions/ConvertDurationToTimeString';
 
-import PlayerContext, { IPlayerEpisode } from '../../contexts/PlayerContext';
+import usePlayer, { IPlayerEpisode } from '../../contexts/PlayerContext';
 
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 import EpisodeThumb from '../EpisodeThumb';
 import ButtonWithImage from '../ButtonWithImage';
-import { title } from 'node:process';
 
 export default function Player() {
-   const { currentEpisode: episode } = useContext(PlayerContext);
+   const audioRef = useRef<HTMLAudioElement>( null );
+
+   const { currentEpisode: episode } = usePlayer();
+
+   const [ progress, setProgress ] = useState(0);
 
    const { title, duration } = episode || {} as IPlayerEpisode;
 
@@ -37,18 +40,18 @@ export default function Player() {
          ) }
 
          <footer className={ !episode ? styles.empty : null }>
-            <AudioPodcast />
+            <AudioPodcast { ...{audioRef} } />
 
             <div className={ styles.progressBar }>
-               <span>00:00</span>
+               <span>{ ConvertDurationToTimeString(progress) }</span>
                <div className={ styles.slider }>
                   { episode ? (
-                     <StyledSlider />
+                     <StyledSlider { ...{audioRef, duration, setProgress} } />
                   ) : (
                      <EmptySlider />
                   ) }
                </div>
-               <span>{ episode ? ConvertDurationToTimeString(duration) : "00:00" }</span>
+               <span>{ ConvertDurationToTimeString(duration ?? 0) }</span>
             </div>
 
             <div className={ styles.buttons }>
@@ -67,18 +70,26 @@ export default function Player() {
 
    // #region *** Audio
 
-function AudioPodcast() {
-   const audioRef = useRef<HTMLAudioElement>( null );
+interface IAudioPodcastProps {
+   audioRef: MutableRefObject<HTMLAudioElement>;
+}
 
+function AudioPodcast( { audioRef }: IAudioPodcastProps ) {
    const {
-      isPlaying
-      , currentEpisode: episode
+      currentEpisode: episode
+      , isPlaying
+      , isLooping: loop
+      , hasNext
       , SetPlayState: ChangeState
-   } = useContext(PlayerContext);
+      , PlayNext
+      , ClearPlayState: ClearState
+   } = usePlayer();
 
    const { url: src } = episode || {} as IPlayerEpisode;
-   const onPlay = ChangeState.bind( null, true );
-   const onPause = ChangeState.bind( null, false );
+   const onPlay = () => ChangeState(true);
+   const onPause = () => ChangeState(false);
+   const onEnded = () => hasNext ? PlayNext() : ClearState();
+   const onLoadedMetadata = () => audioRef.current.currentTime = 0;
 
    useEffect( () => {
 
@@ -93,14 +104,16 @@ function AudioPodcast() {
 
       audio.pause();
 
-   }, [ isPlaying ] )
+   }, [ isPlaying ] );
+
+   // ***
 
    return (
       episode && (
          <audio
             ref={ audioRef }
             autoPlay
-            { ...{src, onPlay, onPause} }
+            { ...{src, loop, onPlay, onPause, onEnded, onLoadedMetadata} }
          />
       )
    );
@@ -134,12 +147,46 @@ function EmptyPlayer() {
 
    // #region *** Slider
 
-function StyledSlider() {
+interface IStyledSliderProps extends IAudioPodcastProps {
+   duration: number;
+   setProgress: ( x: number ) => void;
+}
+
+function StyledSlider( { audioRef, duration: max, setProgress }: IStyledSliderProps ) {
+   const [ value, setValue ] = useState(0);
+   const [ isChanging, setIsChanging ] = useState(false);
+
+   function onTimeUpdate() {
+      const newValue = audioRef.current.currentTime;
+
+      setValue( newValue );
+
+      if ( !isChanging ) setProgress( newValue );
+   }
+
+   useEffect( () => {
+      const { current: audio } = audioRef;
+
+      audio.addEventListener('timeupdate', onTimeUpdate);
+   }, [audioRef] );
+
+   const onChange = (x: number) => {
+      if ( !audioRef.current  ) return;
+
+      audioRef.current.currentTime = x;
+      setValue(x);
+      setProgress(x);
+      setIsChanging(true);
+   }
+
+   // ***
+
    return (
       <Slider
          trackStyle={ {backgroundColor: '#04d361'} }
          railStyle={ {backgroundColor: '#FFFFFF55'} }
          handleStyle={ {borderColor: '#04d361', borderWidth: 4} }
+         { ...{value, max, onChange} }
       />
    );
 }
@@ -155,7 +202,7 @@ function EmptySlider() {
    // #region *** Buttons
 
 function PlayerButton( props: ComponentProps<typeof ButtonWithImage> ) {
-   const { currentEpisode: episode } = useContext(PlayerContext);
+   const { currentEpisode: episode } = usePlayer();
 
    return (
       <ButtonWithImage
@@ -166,19 +213,39 @@ function PlayerButton( props: ComponentProps<typeof ButtonWithImage> ) {
 }
 
 function Shuffle() {
+   const {
+      episodeList
+      , isLooping
+      , isShuffling
+      , ToggleShuffle: onClick
+   } = usePlayer();
+
+   const disabled = ( isLooping || episodeList.length < 2 ) ? true : null;
+   const className = ( !disabled && isShuffling ) ? styles.isActive : null ;
+
+   // ***
+
    return (
       <PlayerButton
          icon="shuffle"
          alt="Emparalhar"
+         { ...{onClick, disabled, className} }
       />
    );
 }
 
 function Prev() {
+   const {
+      hasPrevious
+      , PlayPrevious: onClick
+   } = usePlayer();
+
    return (
       <PlayerButton
          icon="play-previous"
          alt="Tocar anterior"
+         disabled={ !hasPrevious || null }
+         { ...{onClick} }
       />
    );
 }
@@ -187,7 +254,7 @@ function Play() {
    const {
       isPlaying
       , TogglePlay: onClick
-   } = useContext(PlayerContext);
+   } = usePlayer();
 
    return (
       <PlayerButton
@@ -200,19 +267,33 @@ function Play() {
 }
 
 function Next() {
+   const {
+      hasNext
+      , PlayNext: onClick
+   } = usePlayer();
+
    return (
       <PlayerButton
          icon="play-next"
          alt="Tocar próximo"
+         disabled={!hasNext || null}
+         { ...{onClick} }
       />
    );
 }
 
 function Loop() {
+   const {
+      isLooping
+      , ToggleLoop: onClick
+   } = usePlayer();
+
    return (
       <PlayerButton
          icon="repeat"
          alt="Repetir"
+         className={ isLooping ? styles.isActive : null }
+         { ...{onClick} }
       />
    );
 }

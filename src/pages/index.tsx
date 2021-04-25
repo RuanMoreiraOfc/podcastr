@@ -2,7 +2,7 @@
 
 import styles from '../styles/pages/home.module.scss';
 
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment } from 'react';
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -13,10 +13,10 @@ import { IEpisode, IEpisodeApi } from '../utils/interfaces/Episode';
 import CreateEpisodeFromApi from '../utils/functions/CreateEpisodeFromApi';
 import CreateTrueArray from '../utils/functions/CreateTrueArray';
 
-import PlayerContext from '../contexts/PlayerContext';
 
 import EpisodeThumb from '../components/EpisodeThumb';
 import ButtonWithImage from '../components/ButtonWithImage';
+import usePlayer from '../contexts/PlayerContext';
 
 interface IHomeEpisode extends Omit<IEpisode, 'description' >{}
 
@@ -31,16 +31,18 @@ interface IEpisodeDetailProps extends Omit<IHomeEpisode, 'thumbnail'>{
 }
 
 export default function Home({ latestEpisodes, previousEpisodes }: IHomeProps) {
+   const allEpisodes = [].concat(latestEpisodes).concat(previousEpisodes);
+
    return (
       <div className={ styles.container }>
          <Head>
-            <title>Home | podcastr</title>
+            <title>Home | Podcastr</title>
          </Head>
 
          <section className={ styles.latestEpisodes }>
             <h2>Últimos Lançamentos</h2>
 
-            <ul>{ latestEpisodes.map( EpisodeLabel ) }</ul>
+            <ul>{ latestEpisodes.map( ( episode, index ) => EpisodeLabel(episode, index, allEpisodes) ) }</ul>
          </section>
 
          <section className={ styles.allEpisodes }>
@@ -57,7 +59,7 @@ export default function Home({ latestEpisodes, previousEpisodes }: IHomeProps) {
                      <th></th>
                   </tr>
                </thead>
-               <tbody>{ previousEpisodes.map( EpisodeCell ) }</tbody>
+               <tbody>{ previousEpisodes.map( ( episode, index ) => EpisodeCell(episode, index + latestEpisodes.length , allEpisodes) ) }</tbody>
             </table>
          </section>
       </div>
@@ -88,7 +90,7 @@ export const getStaticProps: GetStaticProps = async ( ctx ) => {
 
    // #region *** Episode Body
 
-function EpisodeLabel( episode: IHomeEpisode ) {
+function EpisodeLabel( episode: IHomeEpisode, index: number, episodes: IHomeEpisode[] ) {
    const {
       id
       , thumbnail
@@ -110,12 +112,12 @@ function EpisodeLabel( episode: IHomeEpisode ) {
             <EpisodeDetail { ...props } />
          </div>
 
-         <EpisodeButtonPlay { ...episode } />
+         { EpisodeButtonPlay(index, episodes) }
       </li>
    );
 }
 
-function EpisodeCell( episode: IHomeEpisode ) {
+function EpisodeCell( episode: IHomeEpisode, index: number, episodes: IHomeEpisode[] ) {
    const {
       id
       , thumbnail
@@ -129,7 +131,7 @@ function EpisodeCell( episode: IHomeEpisode ) {
    const props = Object.assign( episode, { tags, tagProps } ) as IEpisodeDetailProps;
 
    function withClassName( className: string ) {
-      return ({className} );
+      return ( {className} );
    }
 
    // ***
@@ -140,7 +142,7 @@ function EpisodeCell( episode: IHomeEpisode ) {
 
          <EpisodeDetail { ...props } />
 
-         <td><EpisodeButtonPlay { ...episode } /></td>
+         <td>{ EpisodeButtonPlay(index, episodes) }</td>
       </tr>
    );
 }
@@ -156,13 +158,13 @@ function EpisodeDetail( { tags, tagProps, ...rest}: IEpisodeDetailProps ) {
       , members
       , publishedAt: date
       , publishedAtAsTime: dateTime
-      , file: source
+      , durationAsString
    } = rest;
 
    const ChildLink = ( <Link href={ `/episodes/${id}` }><a>{ title }</a></Link> );
    const ChildMembers = ( <Fragment>{ members }</Fragment> );
    const ChildTime = ( <time { ...{dateTime} }>{ date }</time> );
-   const ChildDuration = ( <Fragment>{ source.durationAsString }</Fragment> );
+   const ChildDuration = ( <Fragment>{ durationAsString }</Fragment> );
 
    function CreateCustomTag( index ) {
       const children = ( [ChildLink, ChildMembers, ChildTime, ChildDuration] );
@@ -186,29 +188,34 @@ function EpisodeDetail( { tags, tagProps, ...rest}: IEpisodeDetailProps ) {
    );
 }
 
-function EpisodeButtonPlay( episode: IHomeEpisode ) {
-   const { PlayAnEpisode } = useContext( PlayerContext )
+function EpisodeButtonPlay( index: number, episodes: IHomeEpisode[] ) {
+   const { PlayAList } = usePlayer();
 
-   const {
-      title
-      , thumbnail
-      , members
-      , file: source
-   } = episode;
+   const fixedEpisodes = episodes.map( episode => {
+      const {
+         title
+         , thumbnail
+         , members
+         , duration
+         , url
+      } = episode;
+
+      return ({
+         title
+         , thumbnail
+         , members
+         , duration
+         , url
+      });
+   } )
+
+   const play = () => PlayAList( fixedEpisodes , index );
 
    return (
       <ButtonWithImage
          icon="play-green"
          alt="Tocar Episódio"
-         onClick={
-            () => PlayAnEpisode({
-               title
-               , thumbnail
-               , members
-               , duration: source.duration
-               , url: source.url
-            })
-         }
+         onClick={ play }
       />
    );
 }
